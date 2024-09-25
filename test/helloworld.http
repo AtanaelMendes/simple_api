@@ -1,0 +1,31 @@
+﻿@host = http://localhost/simple_api
+
+### Hello World
+GET {{host}}/hello-world
+
+### List all users
+GET {{host}}/users
+
+### Get a user by ID
+GET {{host}}/users/1
+
+### Create a new user
+POST {{host}}/users
+Content-Type: application/json
+
+{
+    "user_name": "John Doe",
+    "user_email": "john@example.com",
+    "user_password": "secret123"
+}
+
+### Update a user
+PUT {{host}}/users/1
+Content-Type: application/json
+
+{
+    "user_name": "Jane Doe"
+}
+
+### Delete a user (soft delete)
+DELETE {{host}}/users/1

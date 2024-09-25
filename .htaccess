@@ -1,0 +1,29 @@
+# Enable RewriteEngine
+RewriteEngine On
+
+# Do not redirect if it's an actual file
+RewriteCond %{REQUEST_FILENAME} !-f
+
+# Do not redirect if it's an actual directory
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Do not redirect static assets
+RewriteCond %{REQUEST_URI} !\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ [NC]
+
+# Redirect everything to index.php keeping the query string
+RewriteRule ^(.*)$ index.php [L,QSA]
+#     Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+#     Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
+# </IfModule>
+
+# Configurações de segurança
+<Files "*.php">
+    Order allow,deny
+    Allow from all
+</Files>
+
+# Bloquear acesso direto a arquivos sensíveis
+<FilesMatch "^(app\.php|routes\.php|\.env)$">
+    Order deny,allow
+    Deny from all
+</FilesMatch>

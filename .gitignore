@@ -1,0 +1,19 @@
+# Dependencies
+vendor/
+
+# Environment
+.env
+.env.test
+.env.production
+
+# Logs
+logs/*.log
+
+# IDE
+.idea/
+.vscode/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db

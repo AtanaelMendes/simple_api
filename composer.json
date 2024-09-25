@@ -1,0 +1,16 @@
+{
+    "name": "simple-api/framework",
+    "description": "A lightweight PHP micro-framework with Controller/Model/Repository pattern",
+    "keywords": ["php", "api", "rest", "micro-framework", "mvc"],
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "require": {
+        "php": ">=8.0",
+        "vlucas/phpdotenv": "^2.0",
+        "respect/validation": "^2.4"
+    }
+}
