@@ -18,7 +18,7 @@ A lightweight PHP micro-framework with **Controller / Service / Repository / Mod
 
 ## Requirements
 
-- PHP 8.0+
+- PHP 7.1.3+
 - Composer
 - MySQL 5.7+ or PostgreSQL 12+
 - Apache with `mod_rewrite` enabled
