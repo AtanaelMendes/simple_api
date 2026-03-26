@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Model;
+
 /**
  * User Model — Table mirror
  *
@@ -15,7 +17,7 @@ namespace App\Models;
  *  deleted_at           DATETIME
  *  created_by           INT   NOT NULL
  */
-class MenuPrincipalModel
+class MenuPrincipalModel extends Model
 {
     protected $table = 'sysfat_menu_principal';
     protected $primaryKey = 'id';
@@ -27,18 +29,8 @@ class MenuPrincipalModel
         'created_by',
     ];
 
-    public function getTable()
+    public function submenus(): array
     {
-        return $this->table;
-    }
-
-    public function getPrimaryKey()
-    {
-        return $this->primaryKey;
-    }
-
-    public function getFillable()
-    {
-        return $this->fillable;
+        return $this->hasMany(SubmenusModel::class, 'id_mp_fk', 'id_submenu_fk IS NULL');
     }
 }

@@ -28,7 +28,7 @@ class MenuPrincipalRepository
     public function findAll()
     {
         $table = $this->model->getTable();
-        $sql = "SELECT * FROM {$table} WHERE deleted_at IS NULL ORDER BY id DESC";
+        $sql = "SELECT * FROM {$table} WHERE deleted_at IS NULL AND id_mp_fk IS NULL ORDER BY id DESC";
         return $this->db->select($sql);
     }
 

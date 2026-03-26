@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\MenuPrincipalModel;
 use App\Repository\MenuPrincipalRepository;
 
 /**
@@ -20,19 +21,35 @@ class MenuPrincipalService extends Service
     }
 
     /**
-     * Get all menu principals (without passwords)
+     * Get all menu principals with submenus loaded
      */
     public function getAll()
     {
-        return $this->repository->findAll();
+        $rows = $this->repository->findAll();
+        return array_map([$this, 'loadSubmenus'], $rows);
     }
 
     /**
-     * Get menu principal by ID (without password)
+     * Get menu principal by ID with submenus loaded
      */
     public function getById($id)
     {
-        return $this->repository->findById($id);
+        $row = $this->repository->findById($id);
+        if (!$row) {
+            return false;
+        }
+        return $this->loadSubmenus($row);
+    }
+
+    /**
+     * Attach submenus to a menu principal row array
+     */
+    private function loadSubmenus(array $row): array
+    {
+        $model = (new MenuPrincipalModel())->fill($row);
+        $submenus = $model->submenus();
+        $row['submenus'] = array_map(fn($s) => $s->toArray(), $submenus);
+        return $row;
     }
 
     /**
