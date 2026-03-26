@@ -1,0 +1,31 @@
+@host = http://localhost/simple_api
+
+
+### List all menu items
+GET {{host}}/menus
+
+### Get a menu item by ID
+GET {{host}}/menus/1
+
+### Create a new menu item
+POST {{host}}/menus
+Content-Type: application/json
+
+{
+    "nm_menu": "Main Menu",
+    "ds_observacoes": "This is the main menu",
+    "is_public": 1
+}
+
+### Update a menu item
+PUT {{host}}/menus/1
+Content-Type: application/json
+
+{
+    "nm_menu": "Updated Menu",
+    "ds_observacoes": "This is the updated menu",
+    "is_public": 0
+}
+
+### Delete a menu item (soft delete)
+DELETE {{host}}/menus/1

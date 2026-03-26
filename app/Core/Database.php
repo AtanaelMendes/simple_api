@@ -42,9 +42,9 @@ class Database
         if (!Environment::has('DB_USERNAME')) {
             throw new \Exception("DB_USERNAME não está definido no arquivo .env");
         }
-        if (!Environment::has('DB_PASSWORD')) {
-            throw new \Exception("DB_PASSWORD não está definido no arquivo .env");
-        }
+        // if (!Environment::has('DB_PASSWORD')) {
+        //     throw new \Exception("DB_PASSWORD não está definido no arquivo .env");
+        // }
         if (!Environment::has('DB_PORT')) {
             throw new \Exception("DB_PORT não está definido no arquivo .env");
         }
