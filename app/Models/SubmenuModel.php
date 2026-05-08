@@ -17,7 +17,7 @@ use App\Models\Model;
  * deleted_at           DATETIME       ,
  * created_by           INT   NOT NULL
  */
-class SubmenusModel extends Model
+class SubmenuModel extends Model
 {
     protected $table = 'sysfat_submenus';
     protected $primaryKey = 'id';

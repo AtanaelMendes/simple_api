@@ -3,21 +3,21 @@
 namespace App\Services;
 
 use App\Models\MenuPrincipalModel;
-use App\Repository\MenuPrincipalRepository;
+use App\Repository\MenusRepository;
 
 /**
- * MenuPrincipal Service — Business Logic Layer
+ * Menus Service — Business Logic Layer
  *
  * Handles business rules: duplicate checks, password hashing,
  * stripping sensitive fields, etc. Delegates data access to the Repository.
  */
-class MenuPrincipalService extends Service
+class MenuService extends Service
 {
     private $repository;
 
     public function __construct()
     {
-        $this->repository = new MenuPrincipalRepository();
+        $this->repository = new MenusRepository();
     }
 
     /**
@@ -25,7 +25,7 @@ class MenuPrincipalService extends Service
      */
     public function getAll()
     {
-        $rows = $this->repository->findAll();
+        $rows = $this->repository->FindAll();
         return array_map([$this, 'loadSubmenus'], $rows);
     }
 
@@ -113,24 +113,54 @@ class MenuPrincipalService extends Service
     }
 
     /**
-     * Soft delete a user
+     * delete a menu
      */
-    public function delete($id)
+    public function deleteMenu($id)
+    {
+        $menu = $this->repository->findById($id);
+        if (!$menu) {
+            return false;
+        }
+
+        return $this->repository->deleteMenu($id);
+    }
+
+    /**
+     * delete a menu
+     */
+    public function deleteSubMenu($id)
+    {
+        $menu = $this->repository->findById($id);
+        if (!$menu) {
+            return false;
+        }
+
+        return $this->repository->deleteMenu($id);
+    }
+
+    /**
+     * Soft delete a menu
+     */
+    public function SoftDeleteMenu($id)
+    {
+        $menu = $this->repository->findById($id);
+        if (!$menu) {
+            return false;
+        }
+
+        return $this->repository->SoftDeleteMenu($id);
+    }
+
+    /**
+     * Soft delete a submenu
+     */
+    public function SoftDeleteSubMenu($id)
     {
         $user = $this->repository->findById($id);
         if (!$user) {
             return false;
         }
 
-        return $this->repository->softDelete($id);
-    }
-
-    /**
-     * Remove sensitive fields from user data
-     */
-    private function stripSensitiveFields($user)
-    {
-        unset($user['user_password']);
-        return $user;
+        return $this->repository->SoftDeleteSubMenu($id);
     }
 }

@@ -4,22 +4,25 @@ namespace App\Repository;
 
 use App\Core\Database;
 use App\Models\MenuPrincipalModel;
+use App\Models\SubmenuModel;
 
 /**
- * MenuPrincipal Repository — Data Access Layer
+ * Menus Repository — Data Access Layer
  *
  * All SQL queries for the menu_principal table live here.
  * Receives and returns raw data arrays — no business logic.
  */
-class MenuPrincipalRepository
+class MenusRepository
 {
     private $db;
-    private $model;
+    private $menuPrincipalModel;
+    private $submenuModel;
 
     public function __construct()
     {
         $this->db = Database::getInstance();
-        $this->model = new MenuPrincipalModel();
+        $this->menuPrincipalModel = new MenuPrincipalModel();
+        $this->submenuModel = new SubmenuModel();
     }
 
     /**
@@ -27,7 +30,7 @@ class MenuPrincipalRepository
      */
     public function findAll()
     {
-        $table = $this->model->getTable();
+        $table = $this->menuPrincipalModel->getTable();
         $sql = "SELECT * FROM {$table} WHERE deleted_at IS NULL AND id_mp_fk IS NULL ORDER BY id DESC";
         return $this->db->select($sql);
     }
@@ -37,8 +40,8 @@ class MenuPrincipalRepository
      */
     public function findById($id)
     {
-        $table = $this->model->getTable();
-        $pk = $this->model->getPrimaryKey();
+        $table = $this->menuPrincipalModel->getTable();
+        $pk = $this->menuPrincipalModel->getPrimaryKey();
         $sql = "SELECT * FROM {$table} WHERE {$pk} = :id AND deleted_at IS NULL LIMIT 1";
         $result = $this->db->select($sql, ['id' => $id]);
         return !empty($result) ? $result[0] : false;
@@ -49,7 +52,7 @@ class MenuPrincipalRepository
      */
     public function findByEmail($email)
     {
-        $table = $this->model->getTable();
+        $table = $this->menuPrincipalModel->getTable();
         $sql = "SELECT * FROM {$table} WHERE user_email = :email AND deleted_at IS NULL LIMIT 1";
         $result = $this->db->select($sql, ['email' => $email]);
         return !empty($result) ? $result[0] : false;
@@ -60,7 +63,7 @@ class MenuPrincipalRepository
      */
     public function create($data)
     {
-        $table = $this->model->getTable();
+        $table = $this->menuPrincipalModel->getTable();
         $fields = [];
         $placeholders = [];
         $values = [];
@@ -86,8 +89,8 @@ class MenuPrincipalRepository
      */
     public function update($menuPrincipalId, $data)
     {
-        $table = $this->model->getTable();
-        $pk = $this->model->getPrimaryKey();
+        $table = $this->menuPrincipalModel->getTable();
+        $pk = $this->menuPrincipalModel->getPrimaryKey();
         $updates = [];
         $params = ['id' => $menuPrincipalId];
 
@@ -107,12 +110,45 @@ class MenuPrincipalRepository
     }
 
     /**
+     * delete a menu principal
+     */
+    public function deleteMenu($menuPrincipalId)
+    {
+        $table = $this->menuPrincipalModel->getTable();
+        $pk = $this->menuPrincipalModel->getPrimaryKey();
+        $sql = "UPDATE {$table} SET deleted_at = NOW() WHERE {$pk} = :id AND deleted_at IS NULL";
+        return $this->db->update($sql, ['id' => $menuPrincipalId]);
+    }
+
+    /**
      * Soft delete a menu principal
      */
-    public function softDelete($menuPrincipalId)
+    public function SoftDeleteMenu($menuPrincipalId)
     {
-        $table = $this->model->getTable();
-        $pk = $this->model->getPrimaryKey();
+        $table = $this->menuPrincipalModel->getTable();
+        $pk = $this->menuPrincipalModel->getPrimaryKey();
+        $sql = "UPDATE {$table} SET deleted_at = NOW() WHERE {$pk} = :id AND deleted_at IS NULL";
+        return $this->db->update($sql, ['id' => $menuPrincipalId]);
+    }
+
+    /**
+     * delete a submenu
+     */
+    public function deleteSubMenu($menuPrincipalId)
+    {
+        $table = $this->submenuModel->getTable();
+        $pk = $this->submenuModel->getPrimaryKey();
+        $sql = "UPDATE {$table} SET deleted_at = NOW() WHERE {$pk} = :id AND deleted_at IS NULL";
+        return $this->db->update($sql, ['id' => $menuPrincipalId]);
+    }
+
+    /**
+     * Soft delete a submenu
+     */
+    public function SoftDeleteSubMenu($menuPrincipalId)
+    {
+        $table = $this->submenuModel->getTable();
+        $pk = $this->submenuModel->getPrimaryKey();
         $sql = "UPDATE {$table} SET deleted_at = NOW() WHERE {$pk} = :id AND deleted_at IS NULL";
         return $this->db->update($sql, ['id' => $menuPrincipalId]);
     }

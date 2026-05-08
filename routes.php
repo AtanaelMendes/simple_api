@@ -8,6 +8,7 @@ $app = new App();
 /** @see App\Controllers\HelloWorldController::getHelloWorld() */
 $app->get("hello-world", [HelloWorldController::class, "getHelloWorld"]);
 
-/** @see App\Controllers\MenuPrincipalController::index() */
-$app->get("menus", [MenuPrincipalController::class, "index"]);
+/** @see App\Controllers\MenusController::index() */
+// $app->get("menus", [MenusController::class, "index"]);
+$app->get("menus", [NewMenusController::class, "index"]);
 
