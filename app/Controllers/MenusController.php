@@ -11,12 +11,12 @@ use Respect\Validation\Exceptions\NestedValidationException;
 
 class MenusController extends Controller
 {
-    private $service;
+    private $menuService;
 
     public function __construct()
     {
         parent::__construct();
-        $this->service = new MenuService();
+        $this->menuService = new MenuService();
     }
 
     /**
@@ -26,12 +26,9 @@ class MenusController extends Controller
     public function index(Request $request, Response $response)
     {
         try {
-            $menuItems = $this->service->getAll();
+            $menuItems = $this->menuService->getAll();
             return $response->success($menuItems, 'Menu items retrieved successfully');
         } catch (\Exception $e) {
-            Logger::error($e->getMessage(), basename(__FILE__)." linha-> ".__LINE__, "MenuPrincipalController_");
-            Logger::warning($e->getMessage(), basename(__FILE__)." linha-> ".__LINE__, "MenuPrincipalController_");
-            Logger::info($e->getMessage(), basename(__FILE__)." linha-> ".__LINE__, "MenuPrincipalController_");
             return $response->error('Error retrieving menu items: ' . $e->getMessage());
         }
     }
@@ -49,7 +46,7 @@ class MenusController extends Controller
                 return $response->validationError('Menu item ID is required');
             }
 
-            $menuItem = $this->service->getById($id);
+            $menuItem = $this->menuService->getById($id);
 
             if (!$menuItem) {
                 return $response->notFound('Menu item not found');
@@ -57,7 +54,6 @@ class MenusController extends Controller
 
             return $response->success($menuItem, 'Menu item retrieved successfully');
         } catch (\Exception $e) {
-            Logger::error($e->getMessage(), basename(__FILE__)." linha-> ".__LINE__, "MenuPrincipalController_");
             return $response->error('Error retrieving menu item: ' . $e->getMessage());
         }
     }
@@ -88,14 +84,13 @@ class MenusController extends Controller
                 'is_public' => $request->getParam('is_public'),
             ];
 
-            $menuItem = $this->service->create($data);
+            $menuItem = $this->menuService->create($data);
 
             return $response->created($menuItem, 'Menu item created successfully');
         } catch (\Exception $e) {
             if (strpos($e->getMessage(), 'already exists') !== false) {
                 return $response->validationError($e->getMessage());
             }
-            Logger::error($e->getMessage(), basename(__FILE__)." linha-> ".__LINE__, "MenuPrincipalController_");
             return $response->error('Error creating menu item: ' . $e->getMessage());
         }
     }
@@ -141,7 +136,7 @@ class MenusController extends Controller
                 }
             }
 
-            $menuItem = $this->service->update($id, $params);
+            $menuItem = $this->menuService->update($id, $params);
 
             if (!$menuItem) {
                 return $response->notFound('Menu item not found');
@@ -149,7 +144,7 @@ class MenusController extends Controller
 
             return $response->success($menuItem, 'Menu item updated successfully');
         } catch (\Exception $e) {
-            Logger::error($e->getMessage(), basename(__FILE__)." linha-> ".__LINE__, "MenuPrincipalController_");
+            Logger::error($e->getMessage(), basename(__FILE__)." linha-> ".__LINE__, "MenusController_");
             return $response->error('Error updating menu item: ' . $e->getMessage());
         }
     }
@@ -167,7 +162,7 @@ class MenusController extends Controller
                 return $response->validationError('Menu item ID is required');
             }
 
-            $deleted = $this->service->delete($id);
+            $deleted = $this->menuService->SoftDeleteMenu($id);
 
             if (!$deleted) {
                 return $response->notFound('Menu item not found');
@@ -175,7 +170,7 @@ class MenusController extends Controller
 
             return $response->success(null, 'Menu item deleted successfully');
         } catch (\Exception $e) {
-            Logger::error($e->getMessage(), basename(__FILE__)." linha-> ".__LINE__, "MenuPrincipalController_");
+            Logger::error($e->getMessage(), basename(__FILE__)." linha-> ".__LINE__, "MenusController_");
             return $response->error('Error deleting menu item: ' . $e->getMessage());
         }
     }

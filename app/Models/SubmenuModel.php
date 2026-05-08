@@ -35,4 +35,9 @@ class SubmenuModel extends Model
     {
         return $this->belongsTo(MenuPrincipalModel::class, 'id_mp_fk');
     }
+
+    public function submenusAgrupados(): array
+    {
+        return $this->hasMany(self::class, 'id_submenu_fk');
+    }
 }

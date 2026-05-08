@@ -26,19 +26,22 @@ class MenuService extends Service
     public function getAll()
     {
         $rows = $this->repository->FindAll();
-        return array_map([$this, 'loadSubmenus'], $rows);
+        $rows = array_map([$this, 'loadSubmenus'], $rows);
+        $rows = array_map([$this, 'loadMenusAgrupados'], $rows);
+        return $rows;
     }
 
     /**
      * Get menu principal by ID with submenus loaded
      */
-    public function getById($id)
+    public function getById(int $id_mp_fk)
     {
-        $row = $this->repository->findById($id);
+        $row = $this->repository->findById($id_mp_fk);
         if (!$row) {
             return false;
         }
-        return $this->loadSubmenus($row);
+        $row = $this->loadSubmenus($row);
+        return $this->loadMenusAgrupados($row);
     }
 
     /**
@@ -49,6 +52,29 @@ class MenuService extends Service
         $model = (new MenuPrincipalModel())->fill($row);
         $submenus = $model->submenus();
         $row['submenus'] = array_map(fn($s) => $s->toArray(), $submenus);
+        return $row;
+    }
+
+    /**
+     * Attach grouped menus to a menu principal row array
+     */
+    private function loadMenusAgrupados(array $row): array
+    {
+        $model = (new MenuPrincipalModel())->fill($row);
+        $menusAgrupados = $model->menusAgrupados();
+        $menusAgrupados = array_map([$this, 'loadSubmenus'], $menusAgrupados);
+        $row['menus_agrupados'] = array_map(fn($m) => $m->toArray(), $menusAgrupados);
+        return $row;
+    }
+
+    /**
+     * Attach grouped submenus to a submenu row array
+     */
+    private function loadSubmenusAgrupados(array $row): array
+    {
+        $model = (new SubmenuModel())->fill($row);
+        $submenusAgrupados = $model->submenusAgrupados();
+        $row['submenus_agrupados'] = array_map(fn($s) => $s->toArray(), $submenusAgrupados);
         return $row;
     }
 
@@ -75,10 +101,10 @@ class MenuService extends Service
     /**
      * Update an existing menu principal
      */
-    public function update($id, $data)
+    public function update(int $id_mp_fk, $data)
     {
         // Check if user exists
-        $user = $this->repository->findById($id);
+        $user = $this->repository->findById($id_mp_fk);
         if (!$user) {
             return false;
         }
@@ -93,7 +119,7 @@ class MenuService extends Service
         if (isset($data['user_email'])) {
             // Check if new email is already in use by another user
             $existing = $this->repository->findByEmail($data['user_email']);
-            if ($existing && $existing['id'] != $id) {
+            if ($existing && $existing['id'] != $id_mp_fk) {
                 throw new \Exception('A user with this email already exists');
             }
             $updateData['user_email'] = $data['user_email'];
@@ -104,63 +130,63 @@ class MenuService extends Service
         }
 
         if (empty($updateData)) {
-            return $this->getById($id);
+            return $this->getById($id_mp_fk);
         }
 
-        $this->repository->update($id, $updateData);
+        $this->repository->update($id_mp_fk, $updateData);
 
-        return $this->getById($id);
+        return $this->getById($id_mp_fk);
     }
 
     /**
      * delete a menu
      */
-    public function deleteMenu($id)
+    public function deleteMenu(int $id_mp_fk)
     {
-        $menu = $this->repository->findById($id);
+        $menu = $this->repository->findById($id_mp_fk);
         if (!$menu) {
             return false;
         }
 
-        return $this->repository->deleteMenu($id);
+        return $this->repository->deleteMenu($id_mp_fk);
     }
 
     /**
      * delete a menu
      */
-    public function deleteSubMenu($id)
+    public function deleteSubMenu(int $id_submenu_fk)
     {
-        $menu = $this->repository->findById($id);
+        $menu = $this->repository->findById($id_submenu_fk);
         if (!$menu) {
             return false;
         }
 
-        return $this->repository->deleteMenu($id);
+        return $this->repository->deleteSubMenu($id_submenu_fk);
     }
 
     /**
      * Soft delete a menu
      */
-    public function SoftDeleteMenu($id)
+    public function SoftDeleteMenu($id_mp_fk)
     {
-        $menu = $this->repository->findById($id);
+        $menu = $this->repository->findById($id_mp_fk);
         if (!$menu) {
             return false;
         }
 
-        return $this->repository->SoftDeleteMenu($id);
+        return $this->repository->SoftDeleteMenu($id_mp_fk);
     }
 
     /**
      * Soft delete a submenu
      */
-    public function SoftDeleteSubMenu($id)
+    public function SoftDeleteSubMenu(int $id_submenu_fk)
     {
-        $user = $this->repository->findById($id);
-        if (!$user) {
+        $submenu = $this->repository->findById($id_submenu_fk);
+        if (!$submenu) {
             return false;
         }
 
-        return $this->repository->SoftDeleteSubMenu($id);
+        return $this->repository->SoftDeleteSubMenu($id_submenu_fk);
     }
 }

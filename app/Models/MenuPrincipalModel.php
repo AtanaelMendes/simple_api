@@ -31,6 +31,11 @@ class MenuPrincipalModel extends Model
 
     public function submenus(): array
     {
-        return $this->hasMany(SubmenusModel::class, 'id_mp_fk', 'id_submenu_fk IS NULL');
+        return $this->hasMany(SubmenuModel::class, 'id_mp_fk', 'id_submenu_fk IS NULL');
+    }
+    
+    public function menusAgrupados(): array
+    {
+        return $this->hasMany(self::class, 'id_mp_fk');
     }
 }
