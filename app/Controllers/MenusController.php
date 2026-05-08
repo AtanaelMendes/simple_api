@@ -37,7 +37,7 @@ class MenusController extends Controller
      * Get menu item by ID
      * GET /menu-principal/{id}
      */
-    public function show(Request $request, Response $response)
+    public function showMenuPrincipal(Request $request, Response $response)
     {
         try {
             $id = $request->getRouteParam('id');
@@ -46,7 +46,7 @@ class MenusController extends Controller
                 return $response->validationError('Menu item ID is required');
             }
 
-            $menuItem = $this->menuService->getById($id);
+            $menuItem = $this->menuService->getMenuPrincipalById($id);
 
             if (!$menuItem) {
                 return $response->notFound('Menu item not found');
@@ -62,7 +62,7 @@ class MenusController extends Controller
      * Create a new menu item
      * POST /menu-principal
      */
-    public function store(Request $request, Response $response)
+    public function storeMenuPrincipal(Request $request, Response $response)
     {
         try {
             $params = $request->getParams();
@@ -84,7 +84,7 @@ class MenusController extends Controller
                 'is_public' => $request->getParam('is_public'),
             ];
 
-            $menuItem = $this->menuService->create($data);
+            $menuItem = $this->menuService->createMenuPrincipal($data);
 
             return $response->created($menuItem, 'Menu item created successfully');
         } catch (\Exception $e) {
@@ -99,7 +99,7 @@ class MenusController extends Controller
      * Update an existing menu item
      * PUT /menu-principal/{id}
      */
-    public function update(Request $request, Response $response)
+    public function updateMenuPrincipal(Request $request, Response $response)
     {
         try {
             $id = $request->getRouteParam('id');
@@ -136,7 +136,7 @@ class MenusController extends Controller
                 }
             }
 
-            $menuItem = $this->menuService->update($id, $params);
+            $menuItem = $this->menuService->updateMenuPrincipal($id, $params);
 
             if (!$menuItem) {
                 return $response->notFound('Menu item not found');
@@ -162,7 +162,7 @@ class MenusController extends Controller
                 return $response->validationError('Menu item ID is required');
             }
 
-            $deleted = $this->menuService->SoftDeleteMenu($id);
+            $deleted = $this->menuService->SoftDeleteMenuPrincipal($id);
 
             if (!$deleted) {
                 return $response->notFound('Menu item not found');

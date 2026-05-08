@@ -31,40 +31,35 @@ class MenusRepository
      */
     public function findAll()
     {
-        $table = $this->menuPrincipalModel->getTable();
-        $sql = "SELECT * FROM {$table} WHERE deleted_at IS NULL AND id_mp_fk IS NULL ORDER BY id DESC";
+        $sql = "SELECT * FROM sysfat_menu_principal WHERE deleted_at IS NULL AND id_mp_fk IS NULL ORDER BY id DESC";
         return $this->db->select($sql);
     }
 
     /**
      * Find menu principal by ID
      */
-    public function findById(int $id_mp_fk)
+    public function findMenuPrincipalById(int $id_mp_fk)
     {
-        $table = $this->menuPrincipalModel->getTable();
-        $pk = $this->menuPrincipalModel->getPrimaryKey();
-        $sql = "SELECT * FROM {$table} WHERE {$pk} = :id AND deleted_at IS NULL LIMIT 1";
+        $sql = "SELECT * FROM sysfat_menu_principal WHERE id = :id AND deleted_at IS NULL LIMIT 1";
         $result = $this->db->select($sql, ['id' => $id_mp_fk]);
         return !empty($result) ? $result[0] : false;
     }
-
+    
     /**
-     * Find menu principal by email
+     * Find submenu by ID
      */
-    public function findByEmail(string $email)
+    public function findSubmenuById(int $id_submenu_fk)
     {
-        $table = $this->menuPrincipalModel->getTable();
-        $sql = "SELECT * FROM {$table} WHERE user_email = :email AND deleted_at IS NULL LIMIT 1";
-        $result = $this->db->select($sql, ['email' => $email]);
+        $sql = "SELECT * FROM sysfat_submenus WHERE id = :id AND deleted_at IS NULL LIMIT 1";
+        $result = $this->db->select($sql, ['id' => $id_submenu_fk]);
         return !empty($result) ? $result[0] : false;
     }
 
     /**
      * Insert a new menu principal
      */
-    public function create(array $data)
+    public function createMenuPrincipal(array $data)
     {
-        $table = $this->menuPrincipalModel->getTable();
         $fields = [];
         $placeholders = [];
         $values = [];
@@ -81,17 +76,40 @@ class MenusRepository
         $fieldsStr = implode(', ', $fields);
         $placeholdersStr = implode(', ', $placeholders);
 
-        $sql = "INSERT INTO {$table} ({$fieldsStr}) VALUES ({$placeholdersStr})";
+        $sql = "INSERT INTO sysfat_menu_principal ({$fieldsStr}) VALUES ({$placeholdersStr})";
+        return $this->db->insert($sql, $values);
+    }
+
+    /**
+     * Insert a new submenu
+     */
+    public function createSubmenu(array $data)
+    {
+        $fields = [];
+        $placeholders = [];
+        $values = [];
+
+        foreach ($data as $field => $value) {
+            $fields[] = $field;
+            $placeholders[] = ":{$field}";
+            $values[$field] = $value;
+        }
+
+        $fields[] = 'created_at';
+        $placeholders[] = 'NOW()';
+
+        $fieldsStr = implode(', ', $fields);
+        $placeholdersStr = implode(', ', $placeholders);
+
+        $sql = "INSERT INTO sysfat_submenus ({$fieldsStr}) VALUES ({$placeholdersStr})";
         return $this->db->insert($sql, $values);
     }
 
     /**
      * Update an existing menu principal
      */
-    public function update(int $menuPrincipalId, array $data)
+    public function updateMenuPrincipal(int $menuPrincipalId, array $data)
     {
-        $table = $this->menuPrincipalModel->getTable();
-        $pk = $this->menuPrincipalModel->getPrimaryKey();
         $updates = [];
         $params = ['id' => $menuPrincipalId];
 
@@ -105,7 +123,30 @@ class MenusRepository
         }
 
         $updatesStr = implode(', ', $updates);
-        $sql = "UPDATE {$table} SET {$updatesStr}, updated_at = NOW() WHERE {$pk} = :id AND deleted_at IS NULL";
+        $sql = "UPDATE sysfat_menu_principal SET {$updatesStr}, updated_at = NOW() WHERE id = :id AND deleted_at IS NULL";
+
+        return $this->db->update($sql, $params);
+    }
+
+        /**
+     * Update an existing submenu
+     */
+    public function updateSubmenu(int $submenuId, array $data)
+    {
+        $updates = [];
+        $params = ['id' => $submenuId];
+
+        foreach ($data as $field => $value) {
+            $updates[] = "{$field} = :{$field}";
+            $params[$field] = $value;
+        }
+
+        if (empty($updates)) {
+            return false;
+        }
+
+        $updatesStr = implode(', ', $updates);
+        $sql = "UPDATE sysfat_submenus SET {$updatesStr}, updated_at = NOW() WHERE id = :id AND deleted_at IS NULL";
 
         return $this->db->update($sql, $params);
     }
@@ -113,45 +154,37 @@ class MenusRepository
     /**
      * delete a menu principal
      */
-    public function deleteMenu(int $menuPrincipalId)
+    public function deleteMenuPrincipal(int $menuPrincipalId)
     {
-        $table = $this->menuPrincipalModel->getTable();
-        $pk = $this->menuPrincipalModel->getPrimaryKey();
-        $sql = "UPDATE {$table} SET deleted_at = NOW() WHERE {$pk} = :id AND deleted_at IS NULL";
+        $sql = "UPDATE sysfat_menu_principal SET deleted_at = NOW() WHERE id = :id AND deleted_at IS NULL";
         return $this->db->update($sql, ['id' => $menuPrincipalId]);
     }
 
     /**
      * Soft delete a menu principal
      */
-    public function SoftDeleteMenu(int $menuPrincipalId)
+    public function SoftDeleteMenuPrincipal(int $menuPrincipalId)
     {
-        $table = $this->menuPrincipalModel->getTable();
-        $pk = $this->menuPrincipalModel->getPrimaryKey();
-        $sql = "UPDATE {$table} SET deleted_at = NOW() WHERE {$pk} = :id AND deleted_at IS NULL";
+        $sql = "UPDATE sysfat_menu_principal SET deleted_at = NOW() WHERE id = :id AND deleted_at IS NULL";
         return $this->db->update($sql, ['id' => $menuPrincipalId]);
     }
 
     /**
      * delete a submenu
      */
-    public function deleteSubMenu(int $menuPrincipalId)
+    public function deleteSubmenu(int $submenuId)
     {
-        $table = $this->submenuModel->getTable();
-        $pk = $this->submenuModel->getPrimaryKey();
-        $sql = "UPDATE {$table} SET deleted_at = NOW() WHERE {$pk} = :id AND deleted_at IS NULL";
-        return $this->db->update($sql, ['id' => $menuPrincipalId]);
+        $sql = "UPDATE sysfat_submenus SET deleted_at = NOW() WHERE id = :id AND deleted_at IS NULL";
+        return $this->db->update($sql, ['id' => $submenuId]);
     }
 
     /**
      * Soft delete a submenu
      */
-    public function SoftDeleteSubMenu(int $menuPrincipalId)
+    public function SoftDeleteSubmenu(int $submenuId)
     {
-        $table = $this->submenuModel->getTable();
-        $pk = $this->submenuModel->getPrimaryKey();
-        $sql = "UPDATE {$table} SET deleted_at = NOW() WHERE {$pk} = :id AND deleted_at IS NULL";
-        return $this->db->update($sql, ['id' => $menuPrincipalId]);
+        $sql = "UPDATE sysfat_submenus SET deleted_at = NOW() WHERE id = :id AND deleted_at IS NULL";
+        return $this->db->update($sql, ['id' => $submenuId]);
     }
 
     public function getMenusListAgrupados(int $id_mp_fk, bool $trashed = false)
