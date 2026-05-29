@@ -2,12 +2,6 @@
 	"folders": [
 		{
 			"path": "."
-		},
-		{
-			"path": "../../saas_api"
-		},
-		{
-			"path": "../api"
 		}
 	],
 	"settings": {}
