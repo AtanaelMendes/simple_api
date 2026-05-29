@@ -2,7 +2,7 @@
 
 namespace App\Core;
 
-class Request
+class Request extends Sanitizer
 {
     private $attributes; // GET parameters
     private $params;     // POST parameters
@@ -27,20 +27,20 @@ class Request
      * Enhanced with comprehensive detection and debugging
      */
     private function parsePostData()
-    {        
+    {
         // Check for JSON data already parsed in global scope (index.php)
         if (isset($_REQUEST['_raw_json']) && is_array($_POST) && !empty($_POST)) {
             return $_POST;
         }
-        
+
         // Check content type in all possible places
         $contentType = $this->getContentType();
-        
+
         // First try: Standard php://input parsing
         // We do this for all POST/PUT/PATCH requests regardless of content type
         if (in_array($_SERVER['REQUEST_METHOD'] ?? '', ['POST', 'PUT', 'PATCH'])) {
             $input = file_get_contents('php://input');
-            
+
             if (!empty($input)) {
                 $decoded = json_decode($input, true);
                 if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
@@ -55,20 +55,20 @@ class Request
                 error_log("Request::parsePostData - Empty request body");
             }
         }
-        
+
         // Second try: If Content-Type is JSON but $_POST is empty,
         // check if raw data was stored in a global variable
         if (strpos($contentType, 'application/json') !== false && empty($_POST) && isset($_REQUEST['_raw_json'])) {
             $raw = $_REQUEST['_raw_json'];
             $decoded = json_decode($raw, true);
-            
+
             if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
                 return $decoded;
             }
         }
         return $_POST;
     }
-    
+
     /**
      * Get content type from all possible sources
      */
@@ -78,12 +78,12 @@ class Request
         if (isset($_SERVER['CONTENT_TYPE'])) {
             return $_SERVER['CONTENT_TYPE'];
         }
-        
+
         // Check alternate location
         if (isset($_SERVER['HTTP_CONTENT_TYPE'])) {
             return $_SERVER['HTTP_CONTENT_TYPE'];
         }
-        
+
         // Check all headers
         if (function_exists('getallheaders')) {
             $headers = getallheaders();
@@ -103,7 +103,7 @@ class Request
                 return $value;
             }
         }
-        
+
         return '';
     }
 
@@ -164,11 +164,11 @@ class Request
     public function getAttributeInt($key, $default = null)
     {
         $value = $this->attributes[$key] ?? null;
-        
+
         if ($value === null || $value === '') {
             return $default;
         }
-        
+
         return filter_var($value, FILTER_VALIDATE_INT) !== false ? (int)$value : $default;
     }
 
@@ -178,11 +178,11 @@ class Request
     public function getParamInt($key, $default = null)
     {
         $value = $this->params[$key] ?? null;
-        
+
         if ($value === null || $value === '') {
             return $default;
         }
-        
+
         return filter_var($value, FILTER_VALIDATE_INT) !== false ? (int)$value : $default;
     }
 
@@ -192,11 +192,11 @@ class Request
     public function getAttributeFloat($key, $default = null)
     {
         $value = $this->attributes[$key] ?? null;
-        
+
         if ($value === null || $value === '') {
             return $default;
         }
-        
+
         return filter_var($value, FILTER_VALIDATE_FLOAT) !== false ? (float)$value : $default;
     }
 
@@ -206,11 +206,11 @@ class Request
     public function getParamFloat($key, $default = null)
     {
         $value = $this->params[$key] ?? null;
-        
+
         if ($value === null || $value === '') {
             return $default;
         }
-        
+
         return filter_var($value, FILTER_VALIDATE_FLOAT) !== false ? (float)$value : $default;
     }
 
@@ -220,11 +220,11 @@ class Request
     public function getAttributeBool($key, $default = null)
     {
         $value = $this->attributes[$key] ?? null;
-        
+
         if ($value === null || $value === '') {
             return $default;
         }
-        
+
         return filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? $default;
     }
 
@@ -234,11 +234,11 @@ class Request
     public function getParamBool($key, $default = null)
     {
         $value = $this->params[$key] ?? null;
-        
+
         if ($value === null || $value === '') {
             return $default;
         }
-        
+
         return filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? $default;
     }
 
@@ -248,11 +248,11 @@ class Request
     public function getAttributeEmail($key, $default = null)
     {
         $value = $this->attributes[$key] ?? null;
-        
+
         if ($value === null || $value === '') {
             return $default;
         }
-        
+
         return filter_var($value, FILTER_VALIDATE_EMAIL) !== false ? $value : $default;
     }
 
@@ -262,11 +262,11 @@ class Request
     public function getParamEmail($key, $default = null)
     {
         $value = $this->params[$key] ?? null;
-        
+
         if ($value === null || $value === '') {
             return $default;
         }
-        
+
         return filter_var($value, FILTER_VALIDATE_EMAIL) !== false ? $value : $default;
     }
 
@@ -278,7 +278,7 @@ class Request
         if (is_array($value)) {
             return array_map([$this, 'sanitize'], $value);
         }
-        
+
         if (is_string($value)) {
             // Remove tags HTML/PHP
             $value = strip_tags($value);
@@ -287,7 +287,7 @@ class Request
             // Trim whitespace
             $value = trim($value);
         }
-        
+
         return $value;
     }
 
@@ -297,12 +297,12 @@ class Request
     public function sanitizeForDb($value)
     {
         $value = $this->sanitize($value);
-        
+
         if (is_string($value)) {
             // Escape para prevenir SQL injection (básico)
             $value = addslashes($value);
         }
-        
+
         return $value;
     }
 
@@ -378,7 +378,7 @@ class Request
     public function getClientIp()
     {
         $ipKeys = ['HTTP_X_FORWARDED_FOR', 'HTTP_X_REAL_IP', 'HTTP_CLIENT_IP', 'REMOTE_ADDR'];
-        
+
         foreach ($ipKeys as $key) {
             if (!empty($_SERVER[$key])) {
                 $ip = $_SERVER[$key];
@@ -389,7 +389,7 @@ class Request
                 return $ip;
             }
         }
-        
+
         return '0.0.0.0';
     }
 
@@ -408,13 +408,13 @@ class Request
     {
         $missing = [];
         $data = $source === 'params' ? $this->params : $this->attributes;
-        
+
         foreach ($params as $param) {
             if (!isset($data[$param]) || empty($data[$param])) {
                 $missing[] = $param;
             }
         }
-        
+
         return empty($missing) ? true : $missing;
     }
 
@@ -440,15 +440,14 @@ class Request
     public function only($keys, $source = 'all')
     {
         $data = [];
-        $sourceData = $source === 'params' ? $this->params : 
-                     ($source === 'attributes' ? $this->attributes : $this->all());
-        
+        $sourceData = $source === 'params' ? $this->params : ($source === 'attributes' ? $this->attributes : $this->all());
+
         foreach ($keys as $key) {
             if (isset($sourceData[$key])) {
                 $data[$key] = $sourceData[$key];
             }
         }
-        
+
         return $data;
     }
 
@@ -457,12 +456,11 @@ class Request
      */
     public function except($keys, $source = 'all')
     {
-        $sourceData = $source === 'params' ? $this->params : 
-                     ($source === 'attributes' ? $this->attributes : $this->all());
-        
+        $sourceData = $source === 'params' ? $this->params : ($source === 'attributes' ? $this->attributes : $this->all());
+
         return array_diff_key($sourceData, array_flip($keys));
     }
-    
+
     /**
      * Set a route parameter
      */
@@ -471,7 +469,7 @@ class Request
         $this->routeParams[$key] = $value;
         return $this;
     }
-    
+
     /**
      * Get route parameter (from URL patterns like /users/{id})
      */
@@ -479,7 +477,7 @@ class Request
     {
         return $this->routeParams[$key] ?? $default;
     }
-    
+
     /**
      * Check if route parameter exists
      */
@@ -487,12 +485,189 @@ class Request
     {
         return isset($this->routeParams[$key]);
     }
-    
+
+    public function has(string $key): bool
+    {
+        if (array_key_exists($key, $this->params)) {
+            $value = $this->params[$key];
+            if (is_string($value)) {
+                if (in_array(strtolower($value), ['null', 'undefined', 'nan'], true)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Get all route parameters
      */
     public function getRouteParams()
     {
         return $this->routeParams;
+    }
+
+    // -------------------------------------------------------------------------
+    // Métodos fluent (*Val): retornam RespectValidationMiddleware para encadeamento.
+    // Terminais: ->value (opcional) ou ->required() (obrigatório).
+    // -------------------------------------------------------------------------
+
+    public function getInt(string $key): RespectValidationMiddleware
+    {
+        $exists = $this->has($key);
+        $raw    = $exists ? $this->getParam($key) : null;
+        $typed  = $exists ? parent::getInt($raw, null) : null;
+        // typeValid = false somente quando o campo existe com valor não-vazio e a conversão falhou
+        $typeValid = !($exists && !is_null($raw) && $raw !== '' && is_null($typed));
+        return new RespectValidationMiddleware($key, $raw, $typed, $typeValid, $this->params);
+    }
+
+    public function getString(string $key, ?string $default = null): RespectValidationMiddleware
+    {
+        $exists = $this->has($key);
+        $raw    = $exists ? $this->getParam($key, $default) : $default;
+        $typed  = $exists ? parent::getString($raw, $default) : $default;
+        $typeValid = !($exists && !is_null($raw) && $raw !== '' && is_null($typed));
+        return new RespectValidationMiddleware($key, $raw, $typed, $typeValid, $this->params);
+    }
+
+    public function getFloat(string $key, ?float $default = null): RespectValidationMiddleware
+    {
+        $exists = $this->has($key);
+        $raw    = $exists ? $this->getParam($key, $default) : $default;
+        $typed  = $exists ? parent::getFloat($raw, $default) : $default;
+        $typeValid = !($exists && !is_null($raw) && $raw !== '' && is_null($typed));
+        return new RespectValidationMiddleware($key, $raw, $typed, $typeValid, $this->params);
+    }
+
+    public function getBoolean(string $key, ?bool $default = null): RespectValidationMiddleware
+    {
+        $exists = $this->has($key);
+        $raw    = $exists ? $this->getParam($key, $default) : $default;
+
+        if (!$exists || is_null($raw) || $raw === '') {
+            return new RespectValidationMiddleware($key, $raw, null, true, $this->params);
+        }
+
+        $typeValid = parent::isBoolean($raw);
+        $typed     = $typeValid ? parent::getBoolean($raw) : null;
+        return new RespectValidationMiddleware($key, $raw, $typed, $typeValid, $this->params);
+    }
+
+    public function getEmail(string $key, ?string $default = null): RespectValidationMiddleware
+    {
+        $exists = $this->has($key);
+        $raw    = $exists ? $this->getParam($key, $default) : $default;
+        $typed  = ($exists && is_string($raw)) ? parent::getEmail($raw, $default) : $default;
+        $typeValid = !($exists && !is_null($raw) && $raw !== '' && is_null($typed));
+        return new RespectValidationMiddleware($key, $raw, $typed, $typeValid, $this->params);
+    }
+
+    public function getDate(string $key, ?string $default = null): RespectValidationMiddleware
+    {
+        $exists = $this->has($key);
+        $raw    = $exists ? $this->getParam($key, $default) : $default;
+
+        if (!$exists || is_null($raw) || $raw === '') {
+            return new RespectValidationMiddleware($key, $raw, null, true, $this->params);
+        }
+
+        $dt        = parent::parseDateValue($raw);
+        $typeValid = $dt !== null;
+        $typed     = $dt !== null ? $dt->format('Y-m-d') : null;
+        return new RespectValidationMiddleware($key, $raw, $typed, $typeValid, $this->params);
+    }
+
+    public function getFile(string $key, ?array $default = null): FileValidationMiddleware
+    {
+        $file = $_FILES[$key] ?? $default;
+
+        // Arquivo não enviado ou campo ausente
+        if (is_null($file) || $file['error'] === UPLOAD_ERR_NO_FILE) {
+            return new FileValidationMiddleware($key, null, true);
+        }
+
+        // Erro de upload (tamanho excedido no php.ini, falha de transferência, etc.)
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            return new FileValidationMiddleware($key, null, false);
+        }
+
+        return new FileValidationMiddleware($key, $file, true);
+    }
+
+    public function getCellPhone(string $key, ?string $default = null): RespectValidationMiddleware
+    {
+        $exists = $this->has($key);
+        $raw    = $exists ? $this->getParam($key, $default) : $default;
+
+        if (!$exists || is_null($raw) || $raw === '') {
+            return new RespectValidationMiddleware($key, $raw, null, true, $this->params);
+        }
+
+        // Remove tudo que não é dígito: espaços, +, (, ), -
+        $digits = preg_replace('/\D/', '', (string) $raw);
+
+        if (strlen($digits) !== 11) {
+            return new RespectValidationMiddleware($key, $raw, null, false, $this->params);
+        }
+
+        return new RespectValidationMiddleware($key, $raw, $digits, true, $this->params);
+    }
+
+    public function isEmail(mixed $key): bool
+    {
+        if (!$this->has($key)) return false;
+
+        return parent::isEmail($this->getParam($key));
+    }
+
+    public function isString(string $key): bool
+    {
+        if (!$this->has($key)) return false;
+
+        return is_string($this->getParam($key));
+    }
+
+    public function isNumeric(mixed $key): bool
+    {
+        if (!$this->has($key)) return false;
+
+        return parent::isNumeric($this->getParam($key));
+    }
+
+    public function isBoolean(mixed $key): bool
+    {
+        if (!$this->has($key)) return false;
+
+        return parent::isBoolean($this->getParam($key));
+    }
+
+    public function isArray(mixed $key): bool
+    {
+        if (!$this->has($key)) return false;
+
+        return parent::isArray($this->getParam($key));
+    }
+
+    public function isNull(mixed $key): bool
+    {
+        if (!$this->has($key)) return false;
+
+        return parent::isNull($this->getParam($key));
+    }
+
+    public function isDate(mixed $key): bool
+    {
+        if (!$this->has($key)) return false;
+
+        return parent::isDate($this->getParam($key));
+    }
+
+    public function isCpf(mixed $key): bool
+    {
+        if (!$this->has($key)) return false;
+
+        return parent::isCpf($this->getParam($key));
     }
 }
