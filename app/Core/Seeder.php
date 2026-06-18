@@ -95,7 +95,7 @@ class Seeder
         echo "🌱 Executando seeder: {$seederName}\n\n";
         
         // Adicionar extensão .php se não tiver
-        if (!str_ends_with($seederName, '.php')) {
+        if (substr($seederName, -4) !== '.php') {
             $seederName .= '.php';
         }
         
@@ -181,7 +181,7 @@ class Seeder
         $seeders = [];
         
         foreach ($files as $file) {
-            if (str_ends_with($file, '.php')) {
+            if (substr($file, -4) === '.php') {
                 $seeders[] = $file;
             }
         }
